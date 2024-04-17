@@ -11,7 +11,7 @@
             const formData = new FormData(document.getElementById('modelForm'));
 
             // 发送 POST 请求到服务器
-            fetch('http://localhost:5000/new_model', {
+            fetch('http://127.0.0.1:5000/new_model', {
                 method: 'POST',
                 body: formData
             })
@@ -33,11 +33,11 @@
 <body>
     <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
     <h1>新建结构模型</h1>
-    <form action="http://localhost:5000/new_model" method="post"><input type="text" name="length" placeholder="Length">
+    <form action="http://127.0.0.1:5000/new_model" method="post"><input type="text" name="length" placeholder="Length">
         <input type="text" name="width" placeholder="Width">
         <input type="text" name="height" placeholder"Height">
         <button type="submit">Submit Model</button>
-    <form action="http://localhost:5000/upload _model" method="post" enctype="multipa.
+    <form action="http://127.0.0.1:5000/upload _model" method="post" enctype="multipa.
         <input type="file" name="model file">
         <button type="submit">Upload File</button>
     </form>
