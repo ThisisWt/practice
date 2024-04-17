@@ -6,28 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>土木智探——新建结构模型</title>
     <script>
-        function submitForm(event) {
-            event.preventDefault();  // 阻止表单默认提交行为
-            const formData = new FormData(document.getElementById('modelForm'));
+    function submitData() {
+        const data = {
+            length: document.getElementById('length').value,
+            width: document.getElementById('width').value,
+            height: document.getElementById('height').value
+        };
 
-            // 发送 POST 请求到服务器
-            fetch('http://127.0.0.1:5000/new_model', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())  // 解析 JSON 响应
-            .then(data => {
-                if (data.image_url) {
-                    // 设置图片 URL
-                    document.getElementById('modelImage').src = data.image_url;
-                } else {
-                    // 处理错误
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(error => console.error('Fetch error:', error));
-        }
-    </script>
+        fetch('http://127.0.0.1:5000/new_model', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'  // 确保设置正确的头部
+            },
+            body: JSON.stringify(data)  // 将对象转换成 JSON 字符串
+        })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error('Error:', error));
+    }
+</script>
 </head>
 
 <body>
