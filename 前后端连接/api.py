@@ -20,9 +20,20 @@ def allowed_file(filename):
 @app.route('/new_model', methods=['POST'])
 def new_model():
     try:
-        length = float(request.form['length'])
-        width = float(request.form['width'])
-        height = float(request.form['height'])
+        if not request.is_json:
+        return jsonify({"error": "Missing JSON in request"}), 400
+
+    data = request.get_json()
+    length = data.get('length')
+    width = data.get('width')
+    height = data.get('height')
+
+    # 确保所有数据都已正确接收
+    if length is None or width is None or height is None:
+        return jsonify({"error": "Missing data for length, width, or height"}), 400
+
+    # 处理数据...
+    return jsonify({"message": "Data processed successfully"})
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         X, Y = np.meshgrid([0, length], [0, width])
