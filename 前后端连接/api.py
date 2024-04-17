@@ -20,10 +20,9 @@ def allowed_file(filename):
 @app.route('/new_model', methods=['POST'])
 def new_model():
     try:
-        data = request.get_json(force=True)
-        length = float(data['length'])
-        width = float(data['width'])
-        height = float(data['height'])
+        length = float(request.form['length'])
+        width = float(request.form['width'])
+        height = float(request.form['height'])
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         X, Y = np.meshgrid([0, length], [0, width])
@@ -32,11 +31,12 @@ def new_model():
         ax.set_xlabel('Length')
         ax.set_ylabel('Width')
         ax.set_zlabel('Height')
-        # 保存图像代替展示
-        image_path = os.path.join(UPLOAD_FOLDER, 'model_plot.png')
+        
+        image_path = os.path.join(app.config['static_folder'], 'model_plot.png')
         plt.savefig(image_path)
         plt.close()
-        return jsonify({'message': 'Model plotted and image saved as model_plot.png'})
+        
+        return jsonify({'message': 'Model plotted and image saved.', 'image_url': '/static/model_plot.png'})
     except Exception as e:
         return jsonify({'error': str(e)})
 
