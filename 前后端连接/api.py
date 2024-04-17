@@ -9,18 +9,15 @@ app = Flask(__name__)
 
 # 配置文件上传目录和允许的文件类型
 UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'cad'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+app.config['STATIC_FOLDER'] = 'static'  # 假定有一个名为 static 的文件夹用于保存生成的图像
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-
 @app.route('/new_model', methods=['POST'])
 def new_model():
-    try:
-        if not request.is_json:
+    if not request.is_json:
         return jsonify({"error": "Missing JSON in request"}), 400
 
     data = request.get_json()
@@ -28,12 +25,10 @@ def new_model():
     width = data.get('width')
     height = data.get('height')
 
-    # 确保所有数据都已正确接收
     if length is None or width is None or height is None:
         return jsonify({"error": "Missing data for length, width, or height"}), 400
 
-    # 处理数据...
-    return jsonify({"message": "Data processed successfully"})
+    try:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
         X, Y = np.meshgrid([0, length], [0, width])
@@ -42,15 +37,14 @@ def new_model():
         ax.set_xlabel('Length')
         ax.set_ylabel('Width')
         ax.set_zlabel('Height')
-        
-        image_path = os.path.join(app.config['static_folder'], 'model_plot.png')
+
+        image_path = os.path.join(app.config['STATIC_FOLDER'], 'model_plot.png')
         plt.savefig(image_path)
         plt.close()
-        
-        return jsonify({'message': 'Model plotted and image saved.', 'image_url': '/static/model_plot.png'})
+
+        return jsonify({'message': 'Model plotted and image saved.', 'image_url': f'/static/model_plot.png'})
     except Exception as e:
         return jsonify({'error': str(e)})
-
 
 @app.route('/upload_model', methods=['POST'])
 def upload_model():
@@ -66,6 +60,6 @@ def upload_model():
     else:
         return jsonify({'error': 'File not allowed'})
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+
