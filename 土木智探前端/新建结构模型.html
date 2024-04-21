@@ -17,9 +17,10 @@
 
         <button type="button" onclick="uploadModel()">上传模型</button>
         <button type="button" onclick="plotModel()">显示模型</button>
+        <button type="button" onclick="toggleModelVisibility()">显示/隐藏模型</button>
     </form>
 
-    <div id="modelPreview"></div>
+    <div id="modelPreview" style="display: none;"></div>
 
     <script>
         function uploadModel() {
@@ -48,6 +49,7 @@
             .then(response => response.json())
             .then(data => {
                 const modelPreview = document.getElementById('modelPreview');
+                modelPreview.style.display = 'block';
                 modelPreview.innerHTML = ''; // 清空之前的图像
                 if (data.success) {
                     const img = new Image();
@@ -57,7 +59,19 @@
                     alert(data.message);
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to fetch the model data');
+            });
+        }
+
+        function toggleModelVisibility() {
+            const modelPreview = document.getElementById('modelPreview');
+            if (modelPreview.style.display === 'none' || modelPreview.style.display === '') {
+                modelPreview.style.display = 'block';
+            } else {
+                modelPreview.style.display = 'none';
+            }
         }
     </script>
 </body>
