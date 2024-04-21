@@ -27,7 +27,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            fetch('/upload_model', {
+            fetch('http://127.0.0.1:5000/upload_model', {
                 method: 'POST',
                 body: formData
             })
@@ -38,7 +38,7 @@
 
         function plotModel() {
             const dimensions = document.getElementById('dimensions').value;
-            fetch('/plot_model', {
+            fetch('http://127.0.0.1:5000/plot_model', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
