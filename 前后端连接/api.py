@@ -1,4 +1,7 @@
 from flask import Flask, request, jsonify, redirect, url_for, send_file
+from flask_cors import CORS  # 需要导入 CORS
+import os  # 确保导入 os 模块
+from werkzeug.utils import secure_filename  # 导入 secure_filename 用于文件名安全处理
 from io import BytesIO
 import base64
 import matplotlib.pyplot as plt
@@ -22,10 +25,8 @@ app.config['STATIC_FOLDER'] = STATIC_FOLDER
 # 允许的文件扩展名集合
 ALLOWED_EXTENSIONS = {'cad', 'jpg', 'png', 'jpeg'}  # 添加更多文件类型如需要
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 @app.route('/plot_model', methods=['POST'])
 def plot_model():
@@ -64,6 +65,6 @@ def upload_model():
     else:
         return jsonify({'error': 'File not allowed'})
 
-
 if __name__ == '__main__':
     app.run(debug=True)
+
