@@ -1,44 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>土木智探——新建结构模型</title>
-    <script>
-    function submitData() {
-        const data = {
-            length: document.getElementById('length').value,
-            width: document.getElementById('width').value,
-            height: document.getElementById('height').value
-        };
-
-        fetch('http://127.0.0.1:5000/new_model', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'  // 确保设置正确的头部
-            },
-            body: JSON.stringify(data)  // 将对象转换成 JSON 字符串
-        })
-        .then(response => response.json())
-        .then(data => console.log(data))
-        .catch(error => console.error('Error:', error));
-    }
-</script>
 </head>
-
 <body>
     <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
     <h1>新建结构模型</h1>
-    <form action="http://127.0.0.1:5000/new_model" method="post"><input type="text" name="length" placeholder="Length">
-        <input type="text" name="width" placeholder="Width">
-        <input type="text" name="height" placeholder"Height">
-        <button type="submit">Submit Model</button>
-    <form action="http://127.0.0.1:5000/upload _model" method="post" enctype="multipa.
-        <input type="file" name="model file">
-        <button type="submit">Upload File</button>
-    </form>
-    <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
-</body>
 
+    <form id="modelForm">
+        <label>输入模型尺寸（长, 宽, 高）：</label>
+        <input type="text" id="dimensions" name="dimensions"><br><br>
+
+        <input type="file" id="fileUpload" name="fileUpload"><br><br>
+
+        <button type="button" onclick="uploadModel()">上传模型</button>
+        <button type="button" onclick="plotModel()">显示模型</button>
+    </form>
+
+    <div id="modelPreview"></div>
+
+    <script>
+        function uploadModel() {
+            const fileInput = document.getElementById('fileUpload');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('/upload_model', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error));
+        }
+
+        function plotModel() {
+            const dimensions = document.getElementById('dimensions').value;
+            fetch('/plot_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dimensions: dimensions })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const img = new Image();
+                    img.src = 'data:image/png;base64,' + data.image;
+                    document.getElementById('modelPreview').appendChild(img);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
 </html>
+
