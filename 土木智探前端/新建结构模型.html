@@ -47,10 +47,12 @@
             })
             .then(response => response.json())
             .then(data => {
+                const modelPreview = document.getElementById('modelPreview');
+                modelPreview.innerHTML = ''; // 清空之前的图像
                 if (data.success) {
                     const img = new Image();
                     img.src = 'data:image/png;base64,' + data.image;
-                    document.getElementById('modelPreview').appendChild(img);
+                    modelPreview.appendChild(img);
                 } else {
                     alert(data.message);
                 }
@@ -60,4 +62,3 @@
     </script>
 </body>
 </html>
-
