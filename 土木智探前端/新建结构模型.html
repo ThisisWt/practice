@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>土木智探——新建结构模型</title>
+    <title>Structural Model Interface</title>
 </head>
 <body>
-    <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
     <h1>新建结构模型</h1>
 
-    <form id="modelForm">
+    <form>
         <label>输入模型尺寸（长, 宽, 高）：</label>
-        <input type="text" id="dimensions" name="dimensions"><br><br>
+        <input type="text" id="dimensions" name="dimensions" placeholder="Length,Width,Height"><br><br>
 
         <input type="file" id="fileUpload" name="fileUpload"><br><br>
 
         <button type="button" onclick="uploadModel()">上传模型</button>
         <button type="button" onclick="plotModel()">显示模型</button>
-        <button type="button" onclick="toggleModelVisibility()">显示/隐藏模型</button>
     </form>
 
-    <div id="modelPreview" style="display: none;"></div>
+    <div id="modelPreview" style="display:none;"></div>
 
     <script>
         function uploadModel() {
@@ -33,7 +31,10 @@
                 body: formData
             })
             .then(response => response.json())
-            .then(data => alert(data.message))
+            .then(data => {
+                alert(data.message);
+                console.log(data);
+            })
             .catch(error => console.error('Error:', error));
         }
 
@@ -48,10 +49,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                const modelPreview = document.getElementById('modelPreview');
-                modelPreview.style.display = 'block';
-                modelPreview.innerHTML = ''; // 清空之前的图像
                 if (data.success) {
+                    const modelPreview = document.getElementById('modelPreview');
+                    modelPreview.style.display = 'block';
+                    modelPreview.innerHTML = ''; // Clear previous images
                     const img = new Image();
                     img.src = 'data:image/png;base64,' + data.image;
                     modelPreview.appendChild(img);
@@ -63,15 +64,6 @@
                 console.error('Error:', error);
                 alert('Failed to fetch the model data');
             });
-        }
-
-        function toggleModelVisibility() {
-            const modelPreview = document.getElementById('modelPreview');
-            if (modelPreview.style.display === 'none' || modelPreview.style.display === '') {
-                modelPreview.style.display = 'block';
-            } else {
-                modelPreview.style.display = 'none';
-            }
         }
     </script>
 </body>
