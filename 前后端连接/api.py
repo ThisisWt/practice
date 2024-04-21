@@ -1,31 +1,21 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-import os
-from werkzeug.utils import secure_filename
-from io import BytesIO
-import base64
+import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
+from io import BytesIO
+import base64
 
 app = Flask(__name__)
 CORS(app)
 
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-ALLOWED_EXTENSIONS = {'cad', 'jpg', 'png', 'jpeg'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 @app.route('/plot_model', methods=['POST'])
 def plot_model():
-    dimensions = request.json.get('dimensions', '').split(',')
+    data = request.json
+    dimensions = data.get('dimensions', '').split(',')
     if len(dimensions) != 3:
-        return jsonify({'success': False, 'message': '请输入三个数值'})
+        return jsonify({'success': False, 'message': 'Please enter three numeric values separated by commas.'}), 400
+
     length, width, height = map(float, dimensions)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -36,25 +26,21 @@ def plot_model():
     ax.set_ylabel('Width')
     ax.set_zlabel('Height')
 
+    # Convert plot to PNG image
     buf = BytesIO()
     plt.savefig(buf, format='png')
     buf.seek(0)
-    img_str = base64.b64encode(buf.read()).decode('utf-8')
-    return jsonify({'success': True, 'image': img_str})
+    image_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+    return jsonify({'success': True, 'image': image_base64})
 
 @app.route('/upload_model', methods=['POST'])
 def upload_model():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'})
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        return jsonify({'message': f'Model imported and saved to {filename}'})
-    else:
-        return jsonify({'error': 'File not allowed'})
+    if file:
+        filename = file.filename
+        file.save(f"./uploads/{filename}")
+        return jsonify({'message': f'Model imported from {filename}', 'success': True})
+    return jsonify({'message': 'No file uploaded', 'success': False})
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=5000, debug=True)
+    app.run(debug=True)
