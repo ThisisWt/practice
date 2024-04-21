@@ -1,11 +1,12 @@
-from flask import Flask, request, jsonify, send_from_directory
-from werkzeug.utils import secure_filename
-import numpy as np
+from flask import Flask, request, jsonify, redirect, url_for, send_file
+from io import BytesIO
+import base64
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import os
+import numpy as np
 
 app = Flask(__name__)
+CORS(app)  # 允许所有域进行跨域请求
 
 # 配置文件上传目录和允许的文件类型
 UPLOAD_FOLDER = 'uploads'
@@ -26,37 +27,28 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
-@app.route('/new_model', methods=['POST'])
-def new_model():
-    if not request.is_json:
-        return jsonify({"error": "Missing JSON in request"}), 400
+@app.route('/plot_model', methods=['POST'])
+def plot_model():
+    dimensions = request.json['dimensions'].split(',')
+    if len(dimensions) != 3:
+        return jsonify({'success': False, 'message': '请输入三个数值'})
+    length, width, height = map(float, dimensions)
 
-    data = request.get_json()
-    length = data.get('length')
-    width = data.get('width')
-    height = data.get('height')
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    X, Y = np.meshgrid([0, length], [0, width])
+    Z = np.array([[0, 0], [height, height]])
+    ax.plot_surface(X, Y, Z)
+    ax.set_xlabel('Length')
+    ax.set_ylabel('Width')
+    ax.set_zlabel('Height')
 
-    if length is None or width is None or height is None:
-        return jsonify({"error": "Missing data for length, width, or height"}), 400
-
-    try:
-        fig = plt.figure()
-        ax = fig.add_subplot(111, projection='3d')
-        X, Y = np.meshgrid([0, float(length)], [0, float(width)])
-        Z = np.array([[0, 0], [float(height), float(height)]])
-        ax.plot_surface(X, Y, Z)
-        ax.set_xlabel('Length')
-        ax.set_ylabel('Width')
-        ax.set_zlabel('Height')
-
-        image_path = os.path.join(app.config['STATIC_FOLDER'], 'model_plot.png')
-        plt.savefig(image_path)
-        plt.close()
-
-        return jsonify({'message': 'Model plotted and image saved.', 'image_url': f'/static/model_plot.png'})
-    except Exception as e:
-        return jsonify({'error': str(e)})
-
+    # 将图片转为Base64编码
+    buf = BytesIO()
+    plt.savefig(buf, format='png')
+    buf.seek(0)
+    img_str = base64.b64encode(buf.read()).decode('utf-8')
+    return jsonify({'success': True, 'image': img_str})
 
 @app.route('/upload_model', methods=['POST'])
 def upload_model():
