@@ -12,13 +12,9 @@ app = Flask(__name__)
 CORS(app)
 
 UPLOAD_FOLDER = 'uploads'
-STATIC_FOLDER = 'static'
-
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(STATIC_FOLDER, exist_ok=True)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['STATIC_FOLDER'] = STATIC_FOLDER
 
 ALLOWED_EXTENSIONS = {'cad', 'jpg', 'png', 'jpeg'}
 
@@ -61,4 +57,4 @@ def upload_model():
         return jsonify({'error': 'File not allowed'})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='127.0.0.1', port=5000, debug=True)
