@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Structural Model Interface</title>
+    <title>结构模型界面</title>
     <style>
         body {
             text-align: center;
@@ -30,7 +30,7 @@
 
     <form>
         <label>输入模型尺寸（长, 宽, 高）：</label>
-        <input type="text" id="dimensions" name="dimensions" placeholder="Length,Width,Height"><br><br>
+        <input type="text" id="dimensions" name="dimensions" placeholder="长度,宽度,高度"><br><br>
 
         <input type="file" id="fileUpload" name="fileUpload"><br><br>
 
@@ -38,7 +38,7 @@
         <button type="button" onclick="plotModel()">显示模型</button>
     </form>
 
-    <div id="modelPreview" style="display:none;"></div>
+    <div id="modelPreview" style="display:none;"></div> <!-- 模型预览窗口 -->
 
     <script>
         function uploadModel() {
@@ -55,7 +55,7 @@
                 alert(data.message);
                 console.log(data);
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => console.error('错误:', error));
         }
 
         function plotModel() {
@@ -72,7 +72,7 @@
                 if (data.success) {
                     const modelPreview = document.getElementById('modelPreview');
                     modelPreview.style.display = 'block';
-                    modelPreview.innerHTML = ''; // Clear previous images
+                    modelPreview.innerHTML = ''; // 清除先前的图像
                     const img = new Image();
                     img.src = 'data:image/png;base64,' + data.image;
                     modelPreview.appendChild(img);
@@ -81,8 +81,8 @@
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to fetch the model data');
+                console.error('错误:', error);
+                alert('无法获取模型数据');
             });
         }
     </script>
