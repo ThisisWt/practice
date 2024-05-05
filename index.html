@@ -10,12 +10,14 @@
 <body>
     <h1>Structure Model Editor</h1>
     <div id="modelContainer" style="width: 800px; height: 600px;"></div>
-    <button onclick="createModel()">Create New Model</button>
-    <form id="importForm" enctype="multipart/form-data">
-        <input type="file" name="file" id="file">
-        <button type="submit">Import Model</button>
-    </form>
-
+    <label for="length">Length:</label>
+    <input type="number" id="length" value="10">
+    <label for="width">Width:</label>
+    <input type="number" id="width" value="10">
+    <label for="height">Height:</label>
+    <input type="number" id="height" value="10">
+    <button onclick="createModel()">Create Model</button>
+    
     <script>
         var scene, camera, renderer, model;
 
@@ -30,11 +32,13 @@
 
         // 创建模型
         function createModel() {
+            var length = parseFloat(document.getElementById('length').value);
+            var width = parseFloat(document.getElementById('width').value);
+            var height = parseFloat(document.getElementById('height').value);
+
             var modelParams = {
-                // 这里可以根据输入参数构建模型
-                // 示例参数
                 type: 'box',
-                size: { x: 10, y: 10, z: 10 }
+                size: { x: length, y: height, z: width }
             };
 
             // 发送模型参数到后端
