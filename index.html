@@ -1,42 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Create Model</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structure Model Editor</title>
+    <!-- 引入Three.js库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
-    <h1>Create Model</h1>
-    <button id="createModelBtn">Create Model</button>
+    <h1>Structure Model Editor</h1>
+    <div id="modelContainer" style="width: 800px; height: 600px;"></div>
+    <button onclick="createModel()">Create New Model</button>
+    <form id="importForm" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <button type="submit">Import Model</button>
+    </form>
 
     <script>
-        $(document).ready(function() {
-            $('#createModelBtn').click(function() {
-                var modelData = {
-                    model_id: '1',
-                    model_params: {
-                        parameter1: 'value1',
-                        parameter2: 'value2'
-                        // 添加更多模型参数
-                    }
-                };
+        var scene, camera, renderer, model;
 
-                $.ajax({
-                    url: '/create_model',
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(modelData),
-                    success: function(response) {
-                        alert(response.message);
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Error creating model: ' + error);
-                    }
-                });
-            });
-        });
-    </script>
-</body>
-</html>
+        // 初始化Three.js场景
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer();
+            renderer.setSize(800, 600);
+            document.getElementById('modelContainer').appendChild(renderer.domElement);
+        }
+
+        // 创建模型
+        function createModel() {
+            var modelParams = {
+                // 这里可以根据输入参数构建模型
+                // 示例参数
+                type: 'box',
+                size: { x: 10, y: 10, z: 10 }
+            };
+
+            // 发送模型参数到后端
+            fetch('/create_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    model_id: 'model1', // 模型ID，可以根据需要自行定义
+                    model_params: modelParams
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+                // 根据返回的模型ID创建Three.js模型
+                createThreeJSModel(data.model_id, data.model_params);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // 创建Three.js模型
+        function createThreeJSModel(modelId, modelParams) {
+            var geometry, material;
+
+            // 根据模型参数创建几何体
+            switch (modelParams.type) {
+                case 'box':
+                    geometry = new THREE.BoxGeometry(modelParams.size.x, modelParams.size.y, modelParams.size.z);
+                    material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                    break;
+                // 可以根据需要添加更多几何体类型
+            }
+
+            model = new THREE.Mesh(geometry, material);
+            scene.add(model);
+
+            // 设置相机位置和视角
+            camera.position.z = 50;
+
+            // 渲染场景
+            renderer.render(scene, camera);
+        }
 
         init(); // 初始化Three.js场景
     </script>
