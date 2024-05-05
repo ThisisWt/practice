@@ -1,6 +1,11 @@
 from flask import Flask, request, jsonify
+from flask import Flask, render_template
 
 app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 # 用于存储模型数据的全局变量，这里简单起见，以字典形式存储模型参数
 models = {}
