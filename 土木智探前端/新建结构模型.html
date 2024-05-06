@@ -77,7 +77,7 @@
                 height: height
             };
 
-            fetch('http://localhost:5000/create_model', { // 修改为后端地址
+            fetch('http://localhost:5000/create_model', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -102,7 +102,7 @@
                 const formData = new FormData();
                 formData.append('file', file);
 
-                fetch('http://localhost:5000/upload_model', { // 修改为后端地址
+                fetch('http://localhost:5000/upload_model', {
                     method: 'POST',
                     body: formData
                 })
