@@ -52,20 +52,24 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             document.getElementById("canvas-container").appendChild(renderer.domElement);
 
-             // 添加环境光
+            // 添加环境光
             const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // 颜色、强度
             scene.add(ambientLight);
 
-             // 添加方向光
+            // 添加方向光
             const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // 颜色、强度
             directionalLight.position.set(0, 1, 0); // 光源位置
             scene.add(directionalLight);
+
+            // 添加点光源
+            const pointLight = new THREE.PointLight(0xffffff, 0.5); // 颜色、强度
+            pointLight.position.set(0, 0, 100); // 光源位置
+            scene.add(pointLight);
 
             controls = new THREE.OrbitControls(camera, renderer.domElement);
 
             animate();
         }
-
 
         function animate() {
             requestAnimationFrame(animate);
@@ -106,7 +110,7 @@
         function uploadModel() {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
-           
+
             fileInput.onchange = function() {
                 const file = this.files[0];
                 const formData = new FormData();
