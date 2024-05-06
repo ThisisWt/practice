@@ -1,31 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>结构模型界面</title>
-    <style>
-        body {
-            text-align: center;
-            background-image: url("background.png");
-            background-size: cover;
-            background-attachment: fixed;
-            margin: 0;
-            overflow: hidden;
-        }
-
-        #canvas-container {
-            width: 100%;
-            height: 100vh;
-        }
-    </style>
+    <title>土木智探——新建结构模型</title>
 </head>
 
 <body>
     <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
-
-    <h1 class="white">1.结构模型输入与编辑</h1>
-    <form id="model-form">
+    <h1>新建结构模型</h1>
+    <form id="modelForm">
         <label for="action">选择操作:</label>
         <select id="action" name="action">
             <option value="矩形梁">矩形梁</option>
@@ -36,36 +21,34 @@
             <option value="修改DXF">修改DXF</option>
             <option value="可视化DXF">可视化DXF</option>
             <option value="导出DXF">导出DXF</option>
-        </select><br><br>
-        <label for="dimensions">尺寸（用逗号分隔）:</label>
-        <input type="text" id="dimensions" name="dimensions"><br><br>
+        </select>
+        <br>
+        <label for="dimensions">尺寸或文件路径（用逗号分隔）:</label>
+        <input type="text" id="dimensions" name="dimensions">
+        <br>
         <input type="submit" value="执行操作">
     </form>
-
-    <div id="result"></div>
+    <div id="output"></div>
 
     <script>
-        document.getElementById("model-form").addEventListener("submit", function(event) {
+        document.getElementById('modelForm').addEventListener('submit', function (event) {
             event.preventDefault();
-            var formData = new FormData(this);
-            fetch('/process_action', {
+            const form = event.target;
+            const formData = new FormData(form);
+            fetch('/', {
                 method: 'POST',
-                body: JSON.stringify({
-                    action: formData.get('action'),
-                    dimensions: formData.get('dimensions').split(',')
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById("result").innerHTML = data.result;
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('output').innerText = data;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
         });
     </script>
+    <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
 </body>
+
 </html>
