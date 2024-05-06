@@ -44,7 +44,8 @@ def create_model():
 
 @app.route('/', methods=['GET'])
 def index():
-    return "Welcome to my Flask app"
+    return send_file(r'D:\桌面\大三下\github\软工大作业\practice-github\practice\土木智探前端\新建结构模型.html')  # 替换为你的前端HTML文件路径
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
