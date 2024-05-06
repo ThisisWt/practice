@@ -7,6 +7,9 @@
     <style>
         body {
             text-align: center;
+            background-image: url("background.png");
+            background-size: cover;
+            background-attachment: fixed;
             margin: 0;
             overflow: hidden;
         }
@@ -22,111 +25,47 @@
     <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
 
     <h1 class="white">1.结构模型输入与编辑</h1>
-
-    <h1>新建结构模型</h1>
-
-    <form id="modelForm">
-        <label>输入模型尺寸（长, 宽, 高）：</label>
-        <input type="text" id="dimensions" name="dimensions" placeholder="长度,宽度,高度"><br><br>
-
-        <button type="button" onclick="createModel()">新建模型</button>
-        <button type="button" onclick="uploadModel()">上传模型</button>
+    <form id="model-form">
+        <label for="action">选择操作:</label>
+        <select id="action" name="action">
+            <option value="矩形梁">矩形梁</option>
+            <option value="圆柱体">圆柱体</option>
+            <option value="球体">球体</option>
+            <option value="导入DXF">导入DXF</option>
+            <option value="分析DXF">分析DXF</option>
+            <option value="修改DXF">修改DXF</option>
+            <option value="可视化DXF">可视化DXF</option>
+            <option value="导出DXF">导出DXF</option>
+        </select><br><br>
+        <label for="dimensions">尺寸（用逗号分隔）:</label>
+        <input type="text" id="dimensions" name="dimensions"><br><br>
+        <input type="submit" value="执行操作">
     </form>
 
-    <div id="canvas-container"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/OBJLoader/2.0.0/OBJLoader.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/orbit-controls-es6/1.3.0/OrbitControls.js"></script>
+    <div id="result"></div>
 
     <script>
-        let scene, camera, renderer, controls, currentModel;
-
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            document.getElementById("canvas-container").appendChild(renderer.domElement);
-
-            // 添加环境光
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5); // 颜色、强度
-            scene.add(ambientLight);
-
-            // 添加方向光
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5); // 颜色、强度
-            directionalLight.position.set(0, 1, 0); // 光源位置
-            scene.add(directionalLight);
-
-            // 添加点光源
-            const pointLight = new THREE.PointLight(0xffffff, 0.5); // 颜色、强度
-            pointLight.position.set(0, 0, 100); // 光源位置
-            scene.add(pointLight);
-
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-            animate();
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        function createModel() {
-            const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
-            const length = dimensions[0];
-            const width = dimensions[1];
-            const height = dimensions[2];
-
-            const data = {
-                length: length,
-                width: width,
-                height: height
-            };
-
-            fetch('http://localhost:5000/create_model', {
+        document.getElementById("model-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            fetch('/process_action', {
                 method: 'POST',
+                body: JSON.stringify({
+                    action: formData.get('action'),
+                    dimensions: formData.get('dimensions').split(',')
+                }),
                 headers: {
                     'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
+                }
             })
-            .then(response => response.text())
+            .then(response => response.json())
             .then(data => {
-                console.log(data);
+                document.getElementById("result").innerHTML = data.result;
             })
             .catch(error => {
                 console.error('Error:', error);
             });
-        }
-
-        function uploadModel() {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-
-            fileInput.onchange = function() {
-                const file = this.files[0];
-                const formData = new FormData();
-                formData.append('file', file);
-
-                fetch('http://localhost:5000/upload_model', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            };
-            fileInput.click();
-        }
-
-        window.onload = init;
+        });
     </script>
 </body>
 </html>
