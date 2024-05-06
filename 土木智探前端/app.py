@@ -1,37 +1,60 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import tkinter as tk
+from tkinter import filedialog
 import ezdxf
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # 处理跨域请求
 
 class StructuralModelingApp:
-    def __init__(self):
+    def __init__(self, master):
+        self.master = master
+        master.title("结构模型与DXF文件处理")
+
+        # 创建主界面
+        self.label = tk.Label(master, text="请输入尺寸（用逗号分隔）或操作DXF文件:")
+        self.label.pack()
+
+        self.entry = tk.Entry(master)
+        self.entry.pack()
+
+        # 下拉菜单，选择形状或DXF操作
+        self.shape_var = tk.StringVar(master)
+        self.shape_var.set("矩形梁")  # 默认值
+        self.shapes = ['矩形梁', '圆柱体', '球体', '导入DXF', '分析DXF', '修改DXF', '可视化DXF', '导出DXF']
+        self.shape_menu = tk.OptionMenu(master, self.shape_var, *self.shapes)
+        self.shape_menu.pack()
+
+        self.action_button = tk.Button(master, text="执行操作", command=self.process_action)
+        self.action_button.pack()
+
+        self.text = tk.Text(master, height=10, width=80)
+        self.text.pack()
+
         self.filename = None
 
-    def process_action(self, action, dimensions):
-        response_text = ""
+    def process_action(self):
+        action = self.shape_var.get()
+        dimensions = self.entry.get().split(',')
         try:
             if action == '矩形梁' and len(dimensions) == 3:
-                response_text = self.plot_beam(*map(float, dimensions))
+                self.plot_beam(*map(float, dimensions))
             elif action == '圆柱体' and len(dimensions) == 2:
-                response_text = self.plot_cylinder(*map(float, dimensions))
+                self.plot_cylinder(*map(float, dimensions))
             elif action == '球体' and len(dimensions) == 1:
-                response_text = self.plot_sphere(float(dimensions[0]))
+                self.plot_sphere(float(dimensions[0]))
             elif action.startswith('导入') and action.endswith('DXF'):
                 self.import_dxf()
-                response_text = f"文件已加载: {self.filename}"
             elif self.filename and action.endswith('DXF'):
                 getattr(self, action.lower().replace(' ', '_'))()
-                response_text = f"执行操作: {action}"
             else:
-                response_text = "请检查输入或选择的操作。"
+                self.text.insert(tk.END, "请检查输入或选择的操作。\n")
         except ValueError:
-            response_text = "请输入有效的数字。"
-        return response_text
+            self.text.insert(tk.END, "请输入有效的数字。\n")
 
     def plot_beam(self, length, width, height):
         fig = plt.figure()
@@ -42,8 +65,7 @@ class StructuralModelingApp:
         ax.set_xlabel('Length')
         ax.set_ylabel('Width')
         ax.set_zlabel('Height')
-        plt.savefig("plot.png")
-        return "plot.png"
+        plt.show()
 
     def plot_cylinder(self, radius, height):
         fig = plt.figure()
@@ -56,8 +78,7 @@ class StructuralModelingApp:
         ax.plot_surface(x_grid, y_grid, z_grid, color='red')
         ax.set_xlabel('Radius')
         ax.set_ylabel('Height')
-        plt.savefig("plot.png")
-        return "plot.png"
+        plt.show()
 
     def plot_sphere(self, radius):
         fig = plt.figure()
@@ -69,31 +90,76 @@ class StructuralModelingApp:
         z = radius * np.outer(np.ones(np.size(u)), np.cos(v))
         ax.plot_surface(x, y, z, color='green')
         ax.set_xlabel('Radius')
-        plt.savefig("plot.png")
-        return "plot.png"
+        plt.show()
 
     def import_dxf(self):
-        self.filename = "example.dxf"  # For testing purposes
+        self.filename = filedialog.askopenfilename(title="选择DXF模型文件", filetypes=[("DXF files", "*.dxf")])
+        if self.filename:
+            self.text.insert(tk.END, f"文件已加载: {self.filename}\n")
 
-    def export_dxf(self):
-        pass  # Add your code for exporting DXF here
+    def 分析dxf(self):
+        doc = ezdxf.readfile(self.filename)
+        msp = doc.modelspace()
+        entity_types = {}
+        for entity in msp:
+            entity_type = entity.dxftype()
+            entity_types[entity_type] = entity_types.get(entity_type, 0) + 1
+        self.text.insert(tk.END, "分析结果:\n")
+        for entity_type, count in entity_types.items():
+            self.text.insert(tk.END, f"{entity_type}: {count}\n")
 
-@app.route('/create_model', methods=['POST'])
-def create_model():
-    data = request.json
-    action = '矩形梁'  # Assuming default action is '矩形梁'
-    dimensions = [data['length'], data['width'], data['height']]
-    return modeling_app.process_action(action, dimensions)
+    def 修改dxf(self):
+        doc = ezdxf.readfile(self.filename)
+        msp = doc.modelspace()
+        # 将所有线条颜色改为红色
+        for entity in msp.query('LINE'):
+            entity.dxf.color = 1
+        doc.saveas('modified_dxf.dxf')
+        self.text.insert(tk.END, "修改已保存到 'modified_dxf.dxf'\n")
 
-@app.route('/upload_model', methods=['POST'])
-def upload_model():
-    file = request.files['file']
-    # Save the uploaded file
-    file.save("uploaded_model.dxf")
-    # Now set the filename in the modeling app
-    modeling_app.filename = "uploaded_model.dxf"
-    return "File uploaded successfully"
+    def 可视化dxf(self):
+        doc = ezdxf.readfile(self.filename)
+        msp = doc.modelspace()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
+        for entity in msp.query('LINE'):
+            start = entity.dxf.start
+            end = entity.dxf.end
+            ax.plot([start[0], end[0]], [start[1], end[1]], [start[2], end[2]], 'gray')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        plt.show()
+
+    def 导出dxf(self):
+        doc = ezdxf.readfile(self.filename)
+        doc.saveas('exported_dxf.dxf')
+        self.text.insert(tk.END, "文件已导出为 'exported_dxf.dxf'\n")
+
+@app.route('/process_action', methods=['POST'])
+def process_action():
+    data = request.get_json()
+    action = data.get('action')
+    dimensions = data.get('dimensions')
+
+    try:
+        if action == '矩形梁' and len(dimensions) == 3:
+            root.plot_beam(*map(float, dimensions))
+        elif action == '圆柱体' and len(dimensions) == 2:
+            root.plot_cylinder(*map(float, dimensions))
+        elif action == '球体' and len(dimensions) == 1:
+            root.plot_sphere(float(dimensions[0]))
+        elif action.startswith('导入') and action.endswith('DXF'):
+            root.import_dxf()
+        elif root.filename and action.endswith('DXF'):
+            getattr(root, action.lower().replace(' ', '_'))()
+        else:
+            return jsonify({'result': "请检查输入或选择的操作。"})
+    except ValueError:
+        return jsonify({'result': "请输入有效的数字。"})
+
+    return jsonify({'result': "操作成功执行。"})
 
 if __name__ == '__main__':
-    modeling_app = StructuralModelingApp()
+    root = StructuralModelingApp(None)  # 创建Tkinter应用
     app.run(debug=True)
