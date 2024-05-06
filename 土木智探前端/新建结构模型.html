@@ -7,9 +7,6 @@
     <style>
         body {
             text-align: center;
-            background-image: url("background.png");
-            background-size: cover;
-            background-attachment: fixed;
             margin: 0;
             overflow: hidden;
         }
@@ -78,8 +75,6 @@
         }
 
         function createModel() {
-            clearScene();
-
             const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
             const length = dimensions[0];
             const width = dimensions[1];
@@ -98,7 +93,7 @@
                 },
                 body: JSON.stringify(data)
             })
-            .then(response => response.json())
+            .then(response => response.text())
             .then(data => {
                 console.log(data);
             })
@@ -120,7 +115,7 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
+                .then(response => response.text())
                 .then(data => {
                     console.log(data);
                 })
@@ -129,28 +124,6 @@
                 });
             };
             fileInput.click();
-        }
-
-        function loadModel(contents) {
-            clearScene();
-
-            const loader = new THREE.OBJLoader();
-            loader.load(contents, function(object) {
-                console.log("Model loaded successfully:", object);
-                currentModel = object;
-                scene.add(currentModel);
-            }, undefined, function(error) {
-                console.error("Error loading model:", error);
-            });
-        }
-
-        function clearScene() {
-            if (currentModel) {
-                scene.remove(currentModel);
-                currentModel.geometry.dispose();
-                currentModel.material.dispose();
-                currentModel = null;
-            }
         }
 
         window.onload = init;
