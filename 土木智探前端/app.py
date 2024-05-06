@@ -1,16 +1,19 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import tkinter as tk
 from tkinter import filedialog
 #import ezdxf
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import io
+import base64
 
 app = Flask(__name__)
 
 class StructuralModelingApp:
     def __init__(self):
         self.text = ""
+        self.image_data = None
         self.filename = None
 
     def process_action(self, action, dimensions):
@@ -39,8 +42,11 @@ class StructuralModelingApp:
         ax.set_xlabel('Length')
         ax.set_ylabel('Width')
         ax.set_zlabel('Height')
-        plt.savefig('plot.png')
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
         plt.close()
+        buffer.seek(0)
+        self.image_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
     def plot_cylinder(self, radius, height):
         fig = plt.figure()
@@ -53,8 +59,11 @@ class StructuralModelingApp:
         ax.plot_surface(x_grid, y_grid, z_grid, color='red')
         ax.set_xlabel('Radius')
         ax.set_ylabel('Height')
-        plt.savefig('plot.png')
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
         plt.close()
+        buffer.seek(0)
+        self.image_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
     def plot_sphere(self, radius):
         fig = plt.figure()
@@ -66,8 +75,11 @@ class StructuralModelingApp:
         z = radius * np.outer(np.ones(np.size(u)), np.cos(v))
         ax.plot_surface(x, y, z, color='green')
         ax.set_xlabel('Radius')
-        plt.savefig('plot.png')
+        buffer = io.BytesIO()
+        plt.savefig(buffer, format='png')
         plt.close()
+        buffer.seek(0)
+        self.image_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
     def import_dxf(self):
         self.filename = filedialog.askopenfilename(title="选择DXF模型文件", filetypes=[("DXF files", "*.dxf")])
@@ -93,7 +105,9 @@ def index():
         action = request.form['action']
         dimensions = request.form['dimensions'].split(',')
         app_instance.process_action(action, dimensions)
-    return render_template('index.html', text=app_instance.text)
+    if app_instance.image_data:
+        return jsonify({'text': app_instance.text, 'image_data': app_instance.image_data})
+    return jsonify({'text': app_instance.text})
 
 if __name__ == '__main__':
     app.run(debug=True)
