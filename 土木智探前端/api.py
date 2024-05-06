@@ -64,5 +64,9 @@ def upload_model():
     else:
         return jsonify({'error': 'File type not allowed'}), 400
 
+@app.route('/', methods=['GET'])
+def index():
+    return "Welcome to my Flask app"
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
