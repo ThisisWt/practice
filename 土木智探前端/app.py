@@ -1,7 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_file
-import tkinter as tk
-from tkinter import filedialog
-#import ezdxf
+from flask import Flask, request, jsonify
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -14,7 +11,6 @@ class StructuralModelingApp:
     def __init__(self):
         self.text = ""
         self.image_data = None
-        self.filename = None
 
     def process_action(self, action, dimensions):
         try:
@@ -24,12 +20,8 @@ class StructuralModelingApp:
                 self.plot_cylinder(*map(float, dimensions))
             elif action == '球体' and len(dimensions) == 1:
                 self.plot_sphere(float(dimensions[0]))
-            elif action.startswith('导入') and action.endswith('DXF'):
-                self.import_dxf()
-            elif self.filename and action.endswith('DXF'):
-                getattr(self, action.lower().replace(' ', '_'))()
             else:
-                self.text += "请检查输入或选择的操作。\n"
+                self.text += "请选择有效的操作并提供正确的尺寸。\n"
         except ValueError:
             self.text += "请输入有效的数字。\n"
 
@@ -81,30 +73,12 @@ class StructuralModelingApp:
         buffer.seek(0)
         self.image_data = base64.b64encode(buffer.getvalue()).decode('utf-8')
 
-    def import_dxf(self):
-        self.filename = filedialog.askopenfilename(title="选择DXF模型文件", filetypes=[("DXF files", "*.dxf")])
-        if self.filename:
-            self.text += f"文件已加载: {self.filename}\n"
-
-    def analyze_dxf(self):
-        pass  # Implement your DXF analysis logic here
-
-    def modify_dxf(self):
-        pass  # Implement your DXF modification logic here
-
-    def visualize_dxf(self):
-        pass  # Implement your DXF visualization logic here
-
-    def export_dxf(self):
-        pass  # Implement your DXF export logic here
-
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['POST'])
 def index():
     app_instance = StructuralModelingApp()
-    if request.method == 'POST':
-        action = request.form['action']
-        dimensions = request.form['dimensions'].split(',')
-        app_instance.process_action(action, dimensions)
+    action = request.form['action']
+    dimensions = request.form['dimensions'].split(',')
+    app_instance.process_action(action, dimensions)
     if app_instance.image_data:
         return jsonify({'text': app_instance.text, 'image_data': app_instance.image_data})
     return jsonify({'text': app_instance.text})
