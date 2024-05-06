@@ -41,9 +41,12 @@
                 method: 'POST',
                 body: formData
             })
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    document.getElementById('output').innerText = data;
+                    document.getElementById('output').innerText = data.text;
+                    if (data.image_data) {
+                        displayModel(data.image_data);
+                    }
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -54,7 +57,7 @@
             const container = document.getElementById('modelContainer');
             container.innerHTML = ''; // Clear previous content
             const img = new Image();
-            img.src = imageSrc;
+            img.src = 'data:image/png;base64,' + imageSrc;
             container.appendChild(img);
         }
     </script>
