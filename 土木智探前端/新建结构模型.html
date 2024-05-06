@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>土木智探——新建结构模型</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
@@ -29,6 +30,7 @@
         <input type="submit" value="执行操作">
     </form>
     <div id="output"></div>
+    <div id="modelContainer" style="width: 400px; height: 400px;"></div>
 
     <script>
         document.getElementById('modelForm').addEventListener('submit', function (event) {
@@ -47,6 +49,14 @@
                     console.error('Error:', error);
                 });
         });
+
+        function displayModel(imageSrc) {
+            const container = document.getElementById('modelContainer');
+            container.innerHTML = ''; // Clear previous content
+            const img = new Image();
+            img.src = imageSrc;
+            container.appendChild(img);
+        }
     </script>
     <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
 </body>
