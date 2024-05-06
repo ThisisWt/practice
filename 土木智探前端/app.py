@@ -4,7 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # 添加跨域支持
 
 UPLOAD_FOLDER = 'uploads'
 if not os.path.exists(UPLOAD_FOLDER):
@@ -44,7 +44,7 @@ def create_model():
 
 @app.route('/', methods=['GET'])
 def index():
-    return send_file(r'D:\桌面\大三下\github\软工大作业\practice-github\practice\土木智探前端\新建结构模型.html')  # 替换为你的前端HTML文件路径
+    return send_file('新建结构模型.html')  # 替换为你的前端HTML文件路径
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
