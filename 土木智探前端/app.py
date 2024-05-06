@@ -33,10 +33,18 @@ def upload_model():
     else:
         return jsonify({'error': 'File type not allowed'}), 400
 
+@app.route('/create_model', methods=['POST'])
+def create_model():
+    data = request.get_json()
+    length = data.get('length')
+    width = data.get('width')
+    height = data.get('height')
+    # 在此处处理创建模型的逻辑
+    return jsonify({'message': 'Model successfully created', 'success': True})
+
 @app.route('/', methods=['GET'])
 def index():
     return "Welcome to my Flask app"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
-
