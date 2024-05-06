@@ -33,15 +33,9 @@
         <label>输入模型尺寸（长, 宽, 高）：</label>
         <input type="text" id="dimensions" name="dimensions" placeholder="长度,宽度,高度"><br><br>
 
-        <!-- 删除上传文件的输入框 -->
-        <!-- <input type="file" id="fileUpload" name="fileUpload"><br><br> -->
-
-        <!-- 修改按钮，直接调用渲染模型的函数 -->
-        <button type="button" onclick="plotModel()">显示模型</button>
+        <button type="button" onclick="createModel()">新建模型</button>
+        <button type="button" onclick="uploadModel()">上传模型</button>
     </form>
-
-    <!-- 删除模型预览窗口 -->
-    <!-- <div id="modelPreview" style="display:none;"></div> -->
 
     <div id="canvas-container"></div> <!-- 用于容纳 Three.js 的 canvas 元素 -->
 
@@ -50,7 +44,7 @@
 
     <script>
         // 初始化 Three.js 相关变量
-        let scene, camera, renderer, controls;
+        let scene, camera, renderer, controls, currentModel;
 
         // 初始化场景、相机、渲染器等
         function init() {
@@ -63,25 +57,6 @@
             // 添加控制器，允许用户进行旋转、平移等操作
             controls = new THREE.OrbitControls(camera, renderer.domElement);
 
-            // 创建模型
-            plotModel();
-        }
-
-        // 创建并添加模型到场景中
-        function plotModel() {
-            const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
-            const length = dimensions[0];
-            const width = dimensions[1];
-            const height = dimensions[2];
-
-            const geometry = new THREE.BoxGeometry(length, width, height);
-            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-            const cube = new THREE.Mesh(geometry, material);
-            scene.add(cube);
-
-            // 设置相机位置，使模型位于相机的可视范围内
-            camera.position.z = Math.max(length, width, height) * 2;
-
             animate(); // 开始渲染循环
         }
 
@@ -92,9 +67,64 @@
             renderer.render(scene, camera);
         }
 
+        // 创建模型
+        function createModel() {
+            clearScene(); // 清除场景中的模型
+
+            const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
+            const length = dimensions[0];
+            const width = dimensions[1];
+            const height = dimensions[2];
+
+            const geometry = new THREE.BoxGeometry(length, width, height);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            currentModel = new THREE.Mesh(geometry, material);
+            scene.add(currentModel);
+
+            // 设置相机位置，使模型位于相机的可视范围内
+            camera.position.z = Math.max(length, width, height) * 2;
+        }
+
+        // 上传模型
+        function uploadModel() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.obj'; // 只允许上传 .obj 格式的模型文件
+            fileInput.onchange = function() {
+                const file = this.files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const contents = event.target.result;
+                    loadModel(contents);
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        }
+
+        // 加载上传的模型
+        function loadModel(contents) {
+            clearScene(); // 清除场景中的模型
+
+            // 解析模型数据并创建模型
+            const loader = new THREE.OBJLoader();
+            const object = loader.parse(contents);
+            currentModel = object.children[0];
+            scene.add(currentModel);
+        }
+
+        // 清除场景中的模型
+        function clearScene() {
+            if (currentModel) {
+                scene.remove(currentModel);
+                currentModel.geometry.dispose();
+                currentModel.material.dispose();
+                currentModel = null;
+            }
+        }
+
         // 页面加载完成后执行初始化操作
         window.onload = init;
     </script>
 </body>
 </html>
-
