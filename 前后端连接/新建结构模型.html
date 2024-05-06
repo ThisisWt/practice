@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结构模型界面</title>
+    <style>
+        body {
+            text-align: center;
+            background-image: url("background.png");
+            background-size: cover;
+            /* 设置背景满铺 */
+            background-attachment: fixed;
+        }
+
+        .white {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="同济大学背景题头.png" style="width: 100%; object-position: center;">
+
+    <a href="结构模型输入与编辑.html" target="_blank" style="text-decoration: none;">
+        <h1 class="white">1.结构模型输入与编辑</h1>
+    <a>
+<body>
+    <h1>新建结构模型</h1>
+
+    <form>
+        <label>输入模型尺寸（长, 宽, 高）：</label>
+        <input type="text" id="dimensions" name="dimensions" placeholder="长度,宽度,高度"><br><br>
+
+        <input type="file" id="fileUpload" name="fileUpload"><br><br>
+
+        <button type="button" onclick="uploadModel()">上传模型</button>
+        <button type="button" onclick="plotModel()">显示模型</button>
+    </form>
+
+    <div id="modelPreview" style="display:none;"></div> <!-- 模型预览窗口 -->
+
+    <script>
+        function uploadModel() {
+            const fileInput = document.getElementById('fileUpload');
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            fetch('http://127.0.0.1:5000/upload_model', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                console.log(data);
+            })
+            .catch(error => console.error('错误:', error));
+        }
+
+        function plotModel() {
+            const dimensions = document.getElementById('dimensions').value;
+            fetch('http://127.0.0.1:5000/plot_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ dimensions: dimensions })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const modelPreview = document.getElementById('modelPreview');
+                    modelPreview.style.display = 'block';
+                    modelPreview.innerHTML = ''; // 清除先前的图像
+                    const img = new Image();
+                    img.src = 'data:image/png;base64,' + data.image;
+                    modelPreview.appendChild(img);
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('错误:', error);
+                alert('无法获取模型数据');
+            });
+        }
+    </script>
+</body>
+</html>
