@@ -1,90 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Structure Model Editor</title>
-    <!-- 引入Three.js库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>结构模型与DXF文件处理</title>
 </head>
 <body>
-    <h1>Structure Model Editor</h1>
-    <div id="modelContainer" style="width: 800px; height: 600px;"></div>
-    <label for="length">Length:</label>
-    <input type="number" id="length" value="10">
-    <label for="width">Width:</label>
-    <input type="number" id="width" value="10">
-    <label for="height">Height:</label>
-    <input type="number" id="height" value="10">
-    <button onclick="createModel()">Create Model</button>
-    
+    <h1>结构模型与DXF文件处理</h1>
+    <label for="dimensions">输入尺寸（用逗号分隔）：</label>
+    <input type="text" id="dimensions">
+    <br>
+    <label for="action">选择操作：</label>
+    <select id="action">
+        <option value="矩形梁">矩形梁</option>
+        <option value="圆柱体">圆柱体</option>
+        <option value="球体">球体</option>
+        <option value="导入DXF">导入DXF</option>
+        <!-- 添加其他操作的选项 -->
+    </select>
+    <br>
+    <button onclick="processAction()">执行操作</button>
+    <br>
+    <textarea id="output" rows="10" cols="80"></textarea>
+
     <script>
-        var scene, camera, renderer, model;
-
-        // 初始化Three.js场景
-        function init() {
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-            renderer = new THREE.WebGLRenderer();
-            renderer.setSize(800, 600);
-            document.getElementById('modelContainer').appendChild(renderer.domElement);
-        }
-
-        // 创建模型
-        function createModel() {
-            var length = parseFloat(document.getElementById('length').value);
-            var width = parseFloat(document.getElementById('width').value);
-            var height = parseFloat(document.getElementById('height').value);
-
-            var modelParams = {
-                type: 'box',
-                size: { x: length / 2, y: height / 2, z: width / 2 }
+        function processAction() {
+            var dimensions = document.getElementById("dimensions").value;
+            var action = document.getElementById("action").value;
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "/process_action/", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    if (response.error) {
+                        document.getElementById("output").value = response.error;
+                    } else {
+                        document.getElementById("output").value = response.message;
+                    }
+                }
             };
-
-            // 发送模型参数到后端
-            fetch('/create_model', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    model_id: 'model1', // 模型ID，可以根据需要自行定义
-                    model_params: modelParams
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                // 根据返回的模型ID创建Three.js模型
-                createThreeJSModel(data.model_id, data.model_params);
-            })
-            .catch(error => console.error('Error:', error));
+            var data = "action=" + encodeURIComponent(action) + "&dimensions=" + encodeURIComponent(dimensions);
+            xhr.send(data);
         }
-
-        // 创建Three.js模型
-        function createThreeJSModel(modelId, modelParams) {
-            var geometry, material;
-
-            // 根据模型参数创建几何体
-            switch (modelParams.type) {
-                case 'box':
-                    geometry = new THREE.BoxGeometry(modelParams.size.x, modelParams.size.y, modelParams.size.z);
-                    material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-                    break;
-                // 可以根据需要添加更多几何体类型
-            }
-
-            model = new THREE.Mesh(geometry, material);
-            scene.add(model);
-
-            // 设置相机位置和视角
-            camera.position.z = 50;
-
-            // 渲染场景
-            renderer.render(scene, camera);
-        }
-
-        init(); // 初始化Three.js场景
     </script>
 </body>
 </html>
