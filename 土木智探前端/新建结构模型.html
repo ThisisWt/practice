@@ -69,60 +69,61 @@
         }
 
         // 创建模型
-function createModel() {
-    clearScene(); // 清除场景中的模型
+        function createModel() {
+            clearScene(); // 清除场景中的模型
 
-    const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
-    const length = dimensions[0];
-    const width = dimensions[1];
-    const height = dimensions[2];
+            const dimensions = document.getElementById('dimensions').value.split(',').map(parseFloat);
+            const length = dimensions[0];
+            const width = dimensions[1];
+            const height = dimensions[2];
 
-    const data = {
-        length: length,
-        width: width,
-        height: height
-    };
+            const data = {
+                length: length,
+                width: width,
+                height: height
+            };
 
-    fetch('/create_model', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
-}
+            fetch('/create_model', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
 
-// 上传模型
-function uploadModel() {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-   
-    fileInput.onchange = function() {
-        const file = this.files[0];
-        const formData = new FormData();
-        formData.append('file', file);
+        // 上传模型
+        function uploadModel() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+           
+            fileInput.onchange = function() {
+                const file = this.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
 
-        fetch('/upload_model', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    };
-    fileInput.click();
-}
+                fetch('/upload_model', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            };
+            fileInput.click();
+        }
+
         // 加载上传的模型
         function loadModel(contents) {
             clearScene(); // 清除场景中的模型
