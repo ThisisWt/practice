@@ -90,7 +90,7 @@
         function uploadModel() {
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
-            fileInput.accept = '.obj'; // 只允许上传 .obj 格式的模型文件
+           
             fileInput.onchange = function() {
                 const file = this.files[0];
                 const reader = new FileReader();
