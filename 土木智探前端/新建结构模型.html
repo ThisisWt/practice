@@ -135,9 +135,13 @@
             clearScene();
 
             const loader = new THREE.OBJLoader();
-            const object = loader.parse(contents);
-            currentModel = object.children[0];
-            scene.add(currentModel);
+            loader.load(contents, function(object) {
+                console.log("Model loaded successfully:", object);
+                currentModel = object;
+                scene.add(currentModel);
+            }, undefined, function(error) {
+                console.error("Error loading model:", error);
+            });
         }
 
         function clearScene() {
