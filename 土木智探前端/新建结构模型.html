@@ -16,6 +16,11 @@
         .white {
             color: white;
         }
+
+        #modelPreview {
+            width: 100%;
+            height: 500px; /* 设置画布大小 */
+        }
     </style>
 </head>
 
@@ -36,52 +41,45 @@
         <button type="button" onclick="plotModel()">显示模型</button>
     </form>
 
-    <div id="modelPreview" style="display:none;"></div> <!-- 模型预览窗口 -->
+    <div id="modelPreview"></div> <!-- 用于渲染三维模型的画布 -->
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        function uploadModel() {
-            const fileInput = document.getElementById('fileUpload');
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-
-            fetch('http://127.0.0.1:5000/upload_model', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                console.log(data);
-            })
-            .catch(error => console.error('错误:', error));
-        }
-
         function plotModel() {
             const dimensions = document.getElementById('dimensions').value;
-            fetch('http://127.0.0.1:5000/plot_model', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ dimensions: dimensions })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const modelPreview = document.getElementById('modelPreview');
-                    modelPreview.style.display = 'block';
-                    modelPreview.innerHTML = ''; // 清除先前的图像
-                    const img = new Image();
-                    img.src = 'data:image/png;base64,' + data.image;
-                    modelPreview.appendChild(img);
-                } else {
-                    alert(data.message);
-                }
-            })
-            .catch(error => {
-                console.error('错误:', error);
-                alert('无法获取模型数据');
-            });
+
+            // 创建场景、相机和渲染器
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize(window.innerWidth, 500); // 设置渲染器的大小
+            document.getElementById('modelPreview').appendChild(renderer.domElement);
+
+            // 创建一个立方体模型并添加到场景中
+            const geometry = new THREE.BoxGeometry(1, 1, 1);
+            const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+
+            // 设置相机位置
+            camera.position.z = 5;
+
+            // 渲染场景
+            const animate = function () {
+                requestAnimationFrame(animate);
+
+                // 使立方体旋转
+                cube.rotation.x += 0.01;
+                cube.rotation.y += 0.01;
+
+                renderer.render(scene, camera);
+            };
+
+            animate();
+        }
+
+        function uploadModel() {
+            // 实现上传模型的逻辑
         }
     </script>
 </body>
